@@ -1,0 +1,13 @@
+---
+- name: Ensure that taps are tapped.
+  homebrew_tap: 
+    tap: "{{ item }}"
+    state: "present"
+    path: "/home/linuxbrew/.linuxbrew/bin"
+  with_items:
+  - "digitalspacestdio/nextgen-devenv"
+
+- name: "Ensure mysql80"
+  homebrew:
+    name: "digitalspace-mysql80"
+    state: latest

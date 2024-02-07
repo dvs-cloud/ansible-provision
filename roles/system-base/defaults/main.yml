@@ -1,0 +1,37 @@
+---
+pup_version: "v0.4.0"
+base_packages:
+  - software-properties-common 
+  - python3-setuptools
+  - python3-pip
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - wget
+  - git-core
+  - htop
+  - iftop
+  - sudo
+  - vim
+  - mysql-client
+  - postgresql-client
+  - patch
+  - rsync
+  - ntp
+  - make
+  - build-essential
+  - systemtap-sdt-dev
+  - procps
+  - zip
+  - unzip
+  - redis-tools
+  - netcat-openbsd
+  - jq
+  - pv
+  - screen
+  - tmux
+  - tmpreaper
+  - net-tools
+
+pip_packages:
+  - jmespath

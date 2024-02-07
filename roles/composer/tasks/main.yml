@@ -1,0 +1,33 @@
+---
+- name: Ensure php taps are tapped.
+  homebrew_tap: "tap={{ item }} state=present"
+  with_items:
+  - "digitalspacestdio/php"
+
+- name: "Ensure composer@1.10"
+  homebrew:
+    name: "composer@1.10"
+    state: latest
+  tags: 
+    - composer@1.10
+
+- name: "Ensure composer@2.2"
+  homebrew:
+    name: "composer@2.2"
+    state: latest
+  tags: 
+    - composer@2.2
+
+- name: "Ensure composer@2.4"
+  homebrew:
+    name: "composer@2.4"
+    state: latest
+  tags: 
+    - composer@2.4
+
+- name: "Ensure composer@2.6"
+  homebrew:
+    name: "composer@2.6"
+    state: latest
+  tags: 
+    - composer@2.6

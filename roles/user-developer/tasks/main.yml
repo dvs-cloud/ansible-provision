@@ -1,0 +1,107 @@
+---
+- shell: "getent passwd '{{ developer_uid }}' | cut -d: -f1 | tr -d '\n'"
+  register: unix_user_developer
+
+- name: "Ensure group {{ developer_username }} exists"
+  group:
+    name: "{{ developer_username }}"
+    state: present
+  when: unix_user_developer.stdout != "" and unix_user_developer.stdout != developer_username
+
+# - name: Move home directory
+#   user:
+#     name: "{{ unix_user_developer.stdout }}"
+#     home: "/home/{{ developer_username }}"
+# #    move_home: yes
+#   when: unix_user_developer.stdout != "" and unix_user_developer.stdout != developer_username
+
+- name: "Rename user {{ unix_user_developer.stdout  }} --> {{ developer_username }}"
+  command: "usermod --login {{ developer_username }} {{ unix_user_developer.stdout }}"
+  when: unix_user_developer.stdout != "" and unix_user_developer.stdout != developer_username
+
+- name: Add the user '{{ developer_username }}' with the {{ developer_uid }} uid and a primary group of '{{ developer_username }}'
+  user:
+    comment: Workspace Owner
+    name: "{{ developer_username }}"
+    uid: "{{ developer_uid }}"
+    groups: [sudo]
+    append: true
+    shell: /bin/bash
+  register: developer_user_info
+
+- name: Set developer_username to exist user
+  set_fact:
+    developer_username: "{{ developer_user_info.name }}"
+
+- name: Change user password (hash)
+  user:
+    name: '{{ developer_username }}'
+    update_password: always
+    password: "{{ developer_password_hash }}"
+  when: developer_password_hash != ""
+
+# - name: Allow root login via ssh
+#   replace:
+#     path: /etc/ssh/sshd_config
+#     regexp: '^.*PermitRootLogin.*$'
+#     replace: 'PermitRootLogin yes'
+
+# - name: Dissalow root password login via ssh
+#   replace:
+#     path: /etc/ssh/sshd_config
+#     regexp: '^.*PasswordAuthentication.*$'
+#     replace: 'PasswordAuthentication no'
+
+# - name: 'Set ClientAliveInterval to 3600'
+#   lineinfile:
+#     path: '/etc/ssh/sshd_config'
+#     line: 'ClientAliveInterval 3600'
+#   ignore_errors: yes 
+
+# - name: Restarting sshd
+#   set_fact:
+#     service_restarted: "{{ service_restarted + [ 'sshd' ] }}"
+
+- name: "Ensure ownerships"
+  file:
+    dest: "{{ developer_user_info.home }}"
+    owner: "{{ developer_username }}"
+    recurse: true
+  when: developer_user_info.home is regex('^/home/.*')
+
+- name: "Enable linger"
+  command: "loginctl enable-linger {{ developer_username }}"
+
+- name: "Ensure tmux"
+  apt: 
+    pkg: tmux
+    state: present
+  become: true
+
+- name: "Ensure 'set -g mouse on' in .tmux.conf"
+  become: true
+  become_user: "{{ developer_username }}"
+  lineinfile:
+    create: yes
+    dest: "{{ developer_user_info.home }}/.tmux.conf"
+    state: present
+    regexp: 'set -g mouse'
+    line: 'set -g mouse on'
+
+- name: Create "{{ developer_username }}" systemd config dir
+  become: true
+  become_user: "{{ developer_username }}"
+  ansible.builtin.file:
+    path: "{{ developer_user_info.home }}/.config/systemd/user"
+    state: directory
+    mode: "0700"
+
+- name: Copy tmux systemd unit file (rootless)
+  become: true
+  become_user: "{{ developer_username }}"
+  ansible.builtin.template:
+    src: tmux.user.service
+    dest: "{{ developer_user_info.home }}/.config/systemd/user/tmux.service"
+    backup: 'yes'
+    mode: 0600
+  notify: Restart user tmux service

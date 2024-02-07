@@ -1,0 +1,199 @@
+---
+- name: Ensure homebrew_prefix
+  set_fact:
+    homebrew_prefix: "/home/linuxbrew/.linuxbrew"
+
+- name: Check if homebrew directory exists
+  stat:
+    path: "{{ homebrew_prefix }}"
+  register: stat_homebrew_prefix
+
+- name: create homebrew directory
+  become: true
+  file:
+    path: "/home/linuxbrew"
+    state: directory
+    owner: "{{ developer_username }}"
+    mode: 0700
+  when: not stat_homebrew_prefix.stat.exists
+
+# - name: install homebrew
+#   shell: |
+#     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#   become: true
+#   become_user: "{{ developer_username }}"
+#   when: not stat_homebrew_prefix.stat.exists
+
+- name: get homebrew version
+  shell: "echo $(curl -H 'Authorization: {{ github_oauth_token }}' -L --silent https://api.github.com/repos/Homebrew/brew/releases | jq -r '.[].tag_name' | grep -v '\\-rc[0-9]*' | head -1)"
+  register: homebrew_version_output
+
+- name: install homebrew
+  shell: |
+    export DEBIAN_FRONTEND=noninteractive
+    export BREW_VERSION="{{ homebrew_version_output.stdout }}"
+    git clone --branch ${BREW_VERSION} --single-branch --depth 1 https://github.com/Homebrew/brew {{ homebrew_prefix }}/Homebrew \
+    && mkdir -p {{ homebrew_prefix }}/etc \
+    {{ homebrew_prefix }}/include \
+    {{ homebrew_prefix }}/lib \
+    {{ homebrew_prefix }}/opt \
+    {{ homebrew_prefix }}/sbin \
+    {{ homebrew_prefix }}/share \
+    {{ homebrew_prefix }}/var/homebrew/linked \
+    {{ homebrew_prefix }}/Cellar \
+    {{ homebrew_prefix }}/bin \
+    {{ homebrew_prefix }}/Homebrew/Library/Taps/homebrew/ \
+    && ln -s ../Homebrew/bin/brew {{ homebrew_prefix }}/bin/
+  become: true
+  become_user: "{{ developer_username }}"
+  when: not stat_homebrew_prefix.stat.exists
+
+# - name: check if homebrew core tap exists
+#   stat:
+#     path: "{{ homebrew_prefix }}/Homebrew/Library/Taps/homebrew/homebrew-core"
+#   register: stat_home_core_tap
+
+# - name: remove homebrew core tap
+#   file:
+#     path: "{{ homebrew_prefix }}/Homebrew/Library/Taps/homebrew/homebrew-core"
+#     state: absent
+#   when: stat_home_core_tap.stat.exists
+
+# - name: ensure homebrew core tap
+#   shell: |
+#     export DEBIAN_FRONTEND=noninteractive
+#     git clone --single-branch --depth 1 https://github.com/Homebrew/homebrew-core {{ homebrew_prefix }}/Homebrew/Library/Taps/homebrew/homebrew-core
+#   become: true
+#   become_user: "{{ developer_username }}"
+
+- name: Configure profiles
+  become: true
+  blockinfile:
+    create: yes
+    dest: '{{ developer_user_info.home }}/{{item}}'
+    marker: "# {mark} brew"
+    block: |
+      export HOMEBREW_NO_AUTO_UPDATE=TRUE
+      export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
+      eval "$({{ homebrew_prefix }}/bin/brew shellenv)"
+  with_items: ['.zprofile', '.profile']
+
+- name: "Updating brew"
+  command: "{{ homebrew_prefix }}/bin/brew update"
+  environment:
+    NONINTERACTIVE: 'TRUE'
+    HOMEBREW_NO_INSTALL_CLEANUP: 'TRUE'
+    HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
+  become: true
+  become_user: "{{ developer_username }}"
+  with_items: 
+    - hadolint
+
+- name: Reconfigure already installed formulas
+  shell: |
+    {{ homebrew_prefix }}/bin/brew postinstall $({{ homebrew_prefix }}/bin/brew list --full-name | grep digitalspacestdio) > /dev/null 2> /dev/null
+  become: true
+  become_user: "{{ developer_username }}"
+  when: stat_homebrew_prefix.stat.exists
+
+- name: "Ensure nvm"
+  command: "{{ homebrew_prefix }}/bin/brew install nvm"
+  environment:
+    NONINTERACTIVE: 'TRUE'
+    HOMEBREW_NO_INSTALL_CLEANUP: 'TRUE'
+    HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Ensure nvm path"
+  command: "{{ homebrew_prefix }}/bin/brew --prefix nvm"
+  environment:
+    NONINTERACTIVE: 'TRUE'
+    HOMEBREW_NO_INSTALL_CLEANUP: 'TRUE'
+    HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
+  register: brew_nvm_prefix_output
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Updating profiles"
+  blockinfile:
+    dest: '{{ developer_user_info.home }}/{{item}}'
+    marker: "# {mark} nvm"
+    block: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "{{ brew_nvm_prefix_output.stdout }}/nvm.sh" ] && . "{{ brew_nvm_prefix_output.stdout }}/nvm.sh"
+      [ -s "{{ brew_nvm_prefix_output.stdout }}/etc/bash_completion.d/nvm" ] && . "{{ brew_nvm_prefix_output.stdout }}/etc/bash_completion.d/nvm"
+  with_items: ['.zshrc', '.bashrc']
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Downloading SDKMAN installer"
+  get_url: 
+    url: https://get.sdkman.io
+    dest: /tmp/get-sdkman.sh
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Ensure SDKMAN"
+  shell: 'bash /tmp/get-sdkman.sh'
+  become: true
+  become_user: "{{ developer_username }}"
+    
+- name: "Adding SDKMAN to profiles"
+  blockinfile:
+    dest: '{{ developer_user_info.home }}/{{item}}'
+    marker: "# {mark} sdkman"
+    block: |
+      source "$HOME/.sdkman/bin/sdkman-init.sh"
+  with_items: ['.zprofile', '.profile']
+
+- name: "Ensure go"
+  command: "{{ homebrew_prefix }}/bin/brew install go"
+  environment:
+    NONINTERACTIVE: 'TRUE'
+    HOMEBREW_NO_INSTALL_CLEANUP: 'TRUE'
+    HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
+  become: true
+  become_user: "{{ developer_username }}"
+    
+- name: "Adding GOPATH to profiles"
+  blockinfile:
+    dest: '{{ developer_user_info.home }}/{{item}}'
+    marker: "# {mark} golang"
+    block: |
+      export GOPATH="${HOME}/go"
+      export PATH="${PATH}:${GOPATH}/bin"
+  with_items: ['.zprofile', '.profile']
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Ensure jenv"
+  command: "{{ homebrew_prefix }}/bin/brew install jenv"
+  environment:
+    NONINTERACTIVE: 'TRUE'
+    HOMEBREW_NO_INSTALL_CLEANUP: 'TRUE'
+    HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
+  become: true
+  become_user: "{{ developer_username }}"
+    
+- name: "Adding jenv to profiles"
+  blockinfile:
+    dest: '{{ developer_user_info.home }}/{{item}}'
+    marker: "# {mark} jenv"
+    block: |
+      export PATH="$HOME/.jenv/bin:$PATH"
+      if which jenv > /dev/null; then eval "$(jenv init -)"; fi
+  with_items: ['.zprofile', '.profile']
+  become: true
+  become_user: "{{ developer_username }}"
+
+# - name: "Ensure {{ item }}"
+#   command: "{{ homebrew_prefix }}/bin/brew install {{ item }}"
+#   environment:
+#     NONINTERACTIVE: 'TRUE'
+#     HOMEBREW_NO_INSTALL_CLEANUP: 'TRUE'
+#     HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
+#   become: true
+#   become_user: "{{ developer_username }}"
+#   with_items: 
+#     - hadolint

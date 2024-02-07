@@ -1,0 +1,229 @@
+---
+- hosts: coder_workspace_vm
+  gather_facts: False
+  vars: 
+    - service_disabled: [ ]
+    - service_started: [ ]
+    - service_restarted: [ ]
+  pre_tasks:
+    - name: 'Ensure python'
+      raw: "sh -c 'which python3 > /dev/null || (apt -yqq update && apt install -yqq python3)'"
+      args:
+        warn: false
+      tags: 
+        - always
+
+    - name: 'Installing facts.d'
+      copy:
+        src: facts.d
+        dest:  /etc/ansible/
+        owner: root
+        mode: u=rwx,g=rx,o=rx
+      tags: 
+        - always
+
+    - name: Gathering facts
+      setup:
+      tags: 
+        - always
+    
+    - name: Ensure homebrew_prefix
+      set_fact:
+        homebrew_prefix: "/home/linuxbrew/.linuxbrew"
+      tags: 
+        - always
+
+    - name: "Stopping digitalspace-supervisor"
+      shell: '[ -e /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-stop ] && /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-stop || /bin/true'
+      become: true
+      become_user: "root"
+      tags: 
+        - always
+
+  roles:
+    # - name: system-print-info
+    #   tags:
+    #     - debug_info
+
+    - role: roles/system-base
+      tags: 
+        - base-system
+
+    - role: roles/user-developer
+      tags: 
+        - base-system
+
+    - role: roles/zsh
+      tags: 
+        - zsh
+
+    - role: roles/system-homebrew
+      when: developer_username is defined
+      tags:
+        - base-system
+
+    - role: roles/nginx-supervisor
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - base-system
+
+    - role: roles/php70
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php70
+        - php
+
+    - role: roles/php71
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php71
+        - php
+    
+    - role: roles/php72
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php72
+        - php
+    
+    - role: roles/php73
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php73
+        - php
+
+    - role: roles/php74
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php74
+        - php
+
+    - role: roles/php80
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php80
+        - php
+
+    - role: roles/php81
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php81
+        - php
+
+    - role: roles/php82
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php82
+        - php
+
+    - role: roles/php83
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - php83
+        - php
+
+    - role: roles/mysql80
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - mysql80
+        - mysql
+    
+    - role: roles/postgresql15
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - postgresql15
+        - postgresql
+
+    - role: roles/composer
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+    
+    - role: roles/mailhog
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - mailhog
+
+  post_tasks:
+    - name: Populate service facts
+      service_facts:
+      tags:
+        - always
+
+    - name: "Disabling services"
+      service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      become: true
+      when: "service_disabled|length > 0 and item in services"
+      with_items: "{{ service_disabled | unique }}"
+      tags:
+        - always
+
+    - name: "Starting services"
+      service:
+        name: "{{ item }}"
+        state: restarted
+      become: true
+      when: "service_started|length > 0 and item in services"
+      with_items: "{{ service_started | unique }}"
+      tags:
+        - always
+
+    - name: "Restarting services"
+      service:
+        name: "{{ item }}"
+        state: restarted
+      become: true
+      when: "service_restarted|length > 0 and item in services"
+      with_items: "{{ service_restarted | unique }}"
+      tags:
+        - always
+
+    - name: "Starting digitalspace-supervisor"
+      shell: '[ -e /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-start ] && /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-start'
+      become: true
+      become_user: "root"
+      tags:
+        - always
+
+    - name: "Changing default shell to zsh "
+      shell: 'chsh -s $(which zsh)'
+      become: true
+      become_user: "root"
+      tags:
+        - zsh
+
+    - name: "Changing default shell to zsh for {{ developer_username }}"
+      shell: 'chsh -s $(which zsh) {{ developer_username }}'
+      become: true
+      become_user: "root"
+      tags:
+        - zsh
+      when: developer_username is defined

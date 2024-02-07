@@ -1,0 +1,6 @@
+developer_username: "{{ lookup('env', 'USER_DEVELOPER_USERNAME') | default('developer', True) }}"
+developer_uid: "{{ lookup('env', 'USER_DEVELOPER_UID') | default('1000', True) }}"
+developer_password_hash: "{{ lookup('env', 'USER_DEVELOPER_PASSWORD_HASH') | default('', True) }}"
+developer_github_accounts: []
+developer_authorized_keys: []
+github_oauth_token: "{{ lookup('env', 'GITHUB_OAUTH_TOKEN') | default('', True) }}"

@@ -1,0 +1,33 @@
+---
+# - name: Disable ipv6
+#   lineinfile:
+#     dest: '/etc/sysctl.conf'
+#     line: '{{ item }}'
+#   with_items:
+#     - 'net.ipv6.conf.all.disable_ipv6 = 1'
+#     - 'net.ipv6.conf.default.disable_ipv6 = 1'
+#     - 'net.ipv6.conf.lo.disable_ipv6 = 1'
+
+- name: Update apt cache
+  apt: 
+    update_cache: yes
+
+- name: Ensure base packages
+  apt:
+    pkg: "{{ base_packages }}"
+    state: present
+
+- name: Ensure pip packages
+  pip:
+    name: "{{ pip_packages }}"
+    state: present
+
+- stat:
+    path: "/etc/ssh/sshd_config"
+  register: etc_ssh_sshd_config
+
+- lineinfile:
+    dest: /etc/ssh/sshd_config
+    state: present
+    line: 'AcceptEnv COMPOSER_AUTH'
+  when: etc_ssh_sshd_config.stat.exists

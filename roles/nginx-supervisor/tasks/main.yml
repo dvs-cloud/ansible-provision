@@ -1,0 +1,18 @@
+---
+- name: Ensure that taps are tapped.
+  homebrew_tap: 
+    tap: "{{ item }}"
+    state: "present"
+    path: "{{ homebrew_prefix }}/bin"
+  with_items:
+  - "digitalspacestdio/nextgen-devenv"
+
+- name: "Ensure supervisor"
+  homebrew:
+    name: "digitalspace-supervisor"
+    state: latest
+
+- name: "Ensure nginx"
+  homebrew:
+    name: "digitalspace-nginx"
+    state: latest

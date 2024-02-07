@@ -1,0 +1,58 @@
+---
+- name: Ensure php taps are tapped.
+  homebrew_tap: "tap={{ item }} state=present"
+  with_items:
+  - "digitalspacestdio/common"
+  - "digitalspacestdio/php"
+
+# - name: "Unlinking all already installed php packages"
+#   shell: "brew list --formula | grep php | xargs brew unlink"
+#   when: ansible_system == "Darwin"
+
+# - name: "Unlinking all already installed php packages"
+#   shell: "brew list --formula | grep php | xargs --no-run-if-empty brew unlink"
+#   when: ansible_system == "Linux"
+
+- shell: "echo $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' | grep -v {{ php_version }} || /bin/true)"
+  register: brew_list
+
+- name: "Remove another php versions"
+  shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
+  when: brew_list.stdout != ""
+
+- name: "Remove another php versions from supervisor"
+  shell: 
+    cmd: "ls | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs -I{} rm {}"
+    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+  when: ansible_system == "Darwin"
+
+- name: "Remove another php versions from supervisor"
+  shell: 
+    cmd: "ls  | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs --no-run-if-empty -I{} rm {}"
+    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+  when: ansible_system == "Linux"
+
+- name: "Installing {{ php_version }} dependencies"
+  homebrew:
+    name: "{{ php_dependencies }}"
+    state: latest
+
+- name: "Installing {{ php_version }}"
+  homebrew:
+    name: "{{ php_version }}"
+    state: latest
+    install_options: "{{ php_flags }}"
+
+- name: "Installing {{ php_version }} modules"
+  homebrew:
+    name: "{{ php_modules }}"
+    state: latest
+    install_options: "build-from-source"
+
+- name: "Remove outdated {{ php_version }}"
+  shell: "brew cleanup {{ php_version }} > /dev/null 2>&1 || /bin/true"
+  ignore_errors: yes
+
+- name: "Installing {{ php_version }} pear packages"
+  shell: "pear install {{ item }}"
+  with_items: "{{ php_pear_packages }}"

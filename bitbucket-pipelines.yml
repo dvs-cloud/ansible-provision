@@ -1,0 +1,13 @@
+image: python:3.7
+options:
+  max-time: 10
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Bootstrap
+          max-time: 30
+          caches:
+            - pip
+          script:
+            - ANSIBLE_HOST_KEY_CHECKING=False python3 ansible-playbook -i environments/default playbook.yml

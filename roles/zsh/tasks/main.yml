@@ -1,0 +1,128 @@
+---
+- name: Ensure ZSH,GIT packages
+  apt: 
+    pkg: 
+      - zsh
+      - git
+    state: present
+  register: installation
+  become: true
+
+- name: Check if .oh-my-zsh exists
+  stat:
+    path: /root/.oh-my-zsh
+  register: stat_oh_my_zsh_result
+  become: true
+
+# - name: Cloning oh-my-zsh repo
+#   git:
+#     repo: https://github.com/robbyrussell/oh-my-zsh
+#     dest: /tmp/.oh-my-zsh
+
+- name: Download oh-my-zsh repo
+  get_url:
+    url: "https://github.com/robbyrussell/oh-my-zsh/archive/refs/heads/master.tar.gz"
+    dest: "/tmp/oh-my-zsh.tar.gz"
+
+- name: "Ensure dir /root/.oh-my-zsh"
+  file:
+    path: "/root/.oh-my-zsh"
+    state: directory
+  become: true
+  when: not stat_oh_my_zsh_result.stat.exists
+
+- name: Ensure /root/.oh-my-zsh
+  unarchive:
+    src:  "/tmp/oh-my-zsh.tar.gz"
+    dest: "/root/.oh-my-zsh"
+    extra_opts: [--strip-components=1]
+  become: true
+  when: not stat_oh_my_zsh_result.stat.exists
+
+- name: Creating new /root/.zshrc
+  copy:
+    src: /root/.oh-my-zsh/templates/zshrc.zsh-template
+    dest: /root/.zshrc
+    remote_src: yes
+  when: not stat_oh_my_zsh_result.stat.exists
+
+- name: "Configure theme hostname"
+  shell: echo $(hostname -s) > /root/.box-name
+  args:
+    executable: /bin/bash
+  become: true
+  when: not stat_oh_my_zsh_result.stat.exists
+
+- name: "Configure theme"
+  lineinfile:
+    dest: /root/.zshrc
+    state: present
+    regexp: '^ZSH_THEME='
+    line: 'ZSH_THEME="fino-time"'
+  become: true
+
+- name: "Enable oh-my-zsh update"
+  lineinfile:
+    dest: /root/.zshrc
+    state: present
+    regexp: "^zstyle ':omz:update'"
+    line: "zstyle ':omz:update' mode auto"
+  become: true
+
+- name: "Check if .oh-my-zsh exists"
+  stat: 
+    path: "/home/{{ developer_username }}/.oh-my-zsh"
+  register: stat_oh_my_zsh_result
+  become: true
+  become_user: "{{ developer_username }}"
+  when: developer_username is defined
+
+- name: "Ensure dir /home/{{ developer_username }}/.oh-my-zsh"
+  file:
+    path: "/home/{{ developer_username }}/.oh-my-zsh"
+    state: directory
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Ensure /home/{{ developer_username }}/.oh-my-zsh"
+  unarchive:
+    src:  "/tmp/oh-my-zsh.tar.gz"
+    dest: "/home/{{ developer_username }}/.oh-my-zsh"
+    owner: "{{ developer_username }}"
+    group: "{{ developer_username }}"
+    extra_opts: [--strip-components=1]
+  when: not stat_oh_my_zsh_result.stat.exists and developer_username is defined
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: Creating new /home/{{ developer_username }}/.zshrc
+  copy:
+    src: /home/{{ developer_username }}/.oh-my-zsh/templates/zshrc.zsh-template
+    dest: /home/{{ developer_username }}/.zshrc
+    remote_src: yes
+  when: not stat_oh_my_zsh_result.stat.exists and developer_username is defined
+  become: true
+  become_user: "{{ developer_username }}"
+
+- name: "Configure theme hostname for{{ developer_username }}"
+  shell: echo $(hostname -s) > /home/{{ developer_username }}/.box-name
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ developer_username }}"
+  when: not stat_oh_my_zsh_result.stat.exists and developer_username is defined
+
+- name: "Configure theme for {{ developer_username }}"
+  lineinfile:
+    dest: /home/{{ developer_username }}/.zshrc
+    state: present
+    regexp: '^ZSH_THEME='
+    line: 'ZSH_THEME="fino-time"'
+  become: true
+  become_user: "{{ developer_username }}"
+  when: not stat_oh_my_zsh_result.stat.exists and developer_username is defined
+
+- name: Cleanup
+  ansible.builtin.file:
+    path: /tmp/oh-my-zsh.tar.gz
+    state: absent
