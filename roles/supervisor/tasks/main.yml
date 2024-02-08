@@ -10,9 +10,4 @@
 - name: "Ensure supervisor"
   homebrew:
     name: "digitalspace-supervisor"
-    state: latest
-
-- name: "Ensure nginx"
-  homebrew:
-    name: "digitalspace-nginx"
-    state: latest
+    state: present

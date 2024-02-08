@@ -62,12 +62,20 @@
       tags:
         - base-system
 
-    - role: roles/nginx-supervisor
+    - role: roles/supervisor
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: developer_username is defined
+      tags:
+        - always
+
+    - role: roles/nginx
       become: yes
       become_user: "{{ developer_username }}"
       when: developer_username is defined
       tags:
         - base-system
+        - nginx
 
     - role: roles/php70
       become: yes
@@ -75,7 +83,6 @@
       when: developer_username is defined
       tags:
         - php70
-        - php
 
     - role: roles/php71
       become: yes
@@ -83,7 +90,6 @@
       when: developer_username is defined
       tags:
         - php71
-        - php
     
     - role: roles/php72
       become: yes
@@ -91,7 +97,6 @@
       when: developer_username is defined
       tags:
         - php72
-        - php
     
     - role: roles/php73
       become: yes
@@ -99,7 +104,6 @@
       when: developer_username is defined
       tags:
         - php73
-        - php
 
     - role: roles/php74
       become: yes
@@ -107,7 +111,6 @@
       when: developer_username is defined
       tags:
         - php74
-        - php
 
     - role: roles/php80
       become: yes
@@ -115,7 +118,6 @@
       when: developer_username is defined
       tags:
         - php80
-        - php
 
     - role: roles/php81
       become: yes
@@ -123,7 +125,6 @@
       when: developer_username is defined
       tags:
         - php81
-        - php
 
     - role: roles/php82
       become: yes
@@ -131,7 +132,6 @@
       when: developer_username is defined
       tags:
         - php82
-        - php
 
     - role: roles/php83
       become: yes
@@ -139,7 +139,6 @@
       when: developer_username is defined
       tags:
         - php83
-        - php
 
     - role: roles/mysql80
       become: yes
@@ -147,7 +146,6 @@
       when: developer_username is defined
       tags:
         - mysql80
-        - mysql
     
     - role: roles/postgresql15
       become: yes
@@ -155,7 +153,6 @@
       when: developer_username is defined
       tags:
         - postgresql15
-        - postgresql
 
     - role: roles/composer
       become: yes

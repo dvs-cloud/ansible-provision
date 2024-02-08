@@ -86,8 +86,6 @@
     HOMEBREW_NO_AUTO_UPDATE: 'TRUE'
   become: true
   become_user: "{{ developer_username }}"
-  with_items: 
-    - hadolint
 
 - name: Reconfigure already installed formulas
   shell: |
