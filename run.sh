@@ -14,6 +14,7 @@ export ANSIBLE_NOCOLOR=True
 export ANSIBLE_CONFIG=${DIR}/ansible.cfg
 export ANSIBLE_STDOUT_CALLBACK=yaml
 
+apt --fix-broken install
 which envsubst > /dev/null || apt update -qqqy && apt install -qqqy gettext
 which pip3 > /dev/null || apt update -qqqy && apt install -qqqy python3-pip
 which python3 > /dev/null || apt update -qqqy && apt install -qqqy python3

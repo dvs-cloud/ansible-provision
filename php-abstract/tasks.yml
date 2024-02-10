@@ -28,7 +28,7 @@
 
 - name: "Remove another php versions from supervisor"
   shell: 
-    cmd: "ls  | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs --no-run-if-empty -I{} rm {}"
+    cmd: "ls | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs --no-run-if-empty -I{} rm {}"
     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
   when: ansible_system == "Linux"
 
