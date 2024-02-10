@@ -4,30 +4,35 @@
   with_items:
   - "digitalspacestdio/php"
 
-- name: "Ensure composer@1.10"
+- name: "Ensure digitalspacestdio/php/composer@1.10"
   homebrew:
-    name: "composer@1.10"
+    name: "digitalspacestdio/php/composer@1.10"
     state: latest
   tags: 
     - composer@1.10
 
-- name: "Ensure composer@2.2"
+- name: "Ensure digitalspacestdio/php/composer@2.2"
   homebrew:
-    name: "composer@2.2"
+    name: "digitalspacestdio/php/composer@2.2"
     state: latest
   tags: 
     - composer@2.2
 
-- name: "Ensure composer@2.4"
+- name: "Ensure digitalspacestdio/php/composer@2.4"
   homebrew:
-    name: "composer@2.4"
+    name: "digitalspacestdio/php/composer@2.4"
     state: latest
   tags: 
     - composer@2.4
 
-- name: "Ensure composer@2.6"
+- name: "Ensure digitalspacestdio/php/composer@2.6"
   homebrew:
-    name: "composer@2.6"
+    name: "digitalspacestdio/php/composer@2.6"
     state: latest
   tags: 
     - composer@2.6
+
+- name: "Remove all composer versions"
+  shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list --full-name | grep 'digitalspacestdio/php/composer')"
+  tags: 
+    - composerNone

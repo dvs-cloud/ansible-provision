@@ -16,9 +16,13 @@
 - shell: "echo $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' | grep -v {{ php_version }} || /bin/true)"
   register: brew_list
 
-- name: "Remove another php versions"
-  shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
+- name: "Unlink another php versions"
+  shell: "{{ homebrew_prefix }}/bin/brew unlink {{ brew_list.stdout }}"
   when: brew_list.stdout != ""
+
+# - name: "Remove another php versions"
+#   shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
+#   when: brew_list.stdout != ""
 
 - name: "Remove another php versions from supervisor"
   shell: 
