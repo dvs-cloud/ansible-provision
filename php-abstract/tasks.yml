@@ -61,4 +61,4 @@
   copy:
     dest: "{{ homebrew_prefix }}/etc/php/.phprc"
     mode: '0644'
-    content: "{{ php_version }}"
+    content: "{{ php_version_num }}"
