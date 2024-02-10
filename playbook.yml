@@ -205,7 +205,7 @@
         chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
       when: ansible_system == "Linux"
 
-     - name: "Remove all php versions"
+    - name: "Remove all php versions"
       shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
       when: php_version is not defined and brew_list.stdout != ""
 
