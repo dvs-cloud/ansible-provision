@@ -213,7 +213,7 @@
       shell: 
         cmd: "ls | grep 'nginx' | xargs --no-run-if-empty -I{} rm {}"
         chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
-      when:when: php_version is not defined and ansible_system == "Linux"
+      when: php_version is not defined and ansible_system == "Linux"
 
     - name: Populate service facts
       service_facts:
