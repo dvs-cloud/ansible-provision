@@ -1,5 +1,6 @@
 ---
 php_version: php83
+php_version_num: "8.3"
 php_flags: ""
 php_dependencies:
 php_modules: [ "php83-common" ]

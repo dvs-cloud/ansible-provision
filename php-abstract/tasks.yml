@@ -58,4 +58,7 @@
   with_items: "{{ php_pear_packages }}"
 
 - name: "Ensure {{ php_version }} as default php"
-  shell: "{{ homebrew_prefix }}/opt/{{ php_version }}bin/php -v | grep '^PHP [0-9]\\+.[0-9]\\+.[0-9]\\+' -o | grep '[0-9]\\+.\\([0-9].[0-9]\\+\\)' -o | awk -F. '{ print $1\".\"$2 }' | tee {{ homebrew_prefix }}/etc/php/.phprc"
+  copy:
+    dest: "{{ homebrew_prefix }}/etc/php/.phprc"
+    mode: '0644'
+    content: "{{ php_version }}"
