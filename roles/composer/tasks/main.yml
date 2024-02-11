@@ -13,7 +13,7 @@
 
 - name: "Adding 'composer@2.6' to 'composer_versions' array"
   set_fact:
-    php_versions: "{{ composer_versions + [ 'composer@2.6' ] }}"
+    composer_versions: "{{ composer_versions + [ 'composer@2.6' ] }}"
   tags: 
     - composer@2.6
 
@@ -26,7 +26,7 @@
 
 - name: "Adding 'composer@2.4' to 'composer_versions' array"
   set_fact:
-    php_versions: "{{ composer_versions + [ 'composer@2.4' ] }}"
+    composer_versions: "{{ composer_versions + [ 'composer@2.4' ] }}"
   tags: 
     - composer@2.4
 
@@ -39,7 +39,7 @@
 
 - name: "Adding 'composer@2.2' to 'composer_versions' array"
   set_fact:
-    php_versions: "{{ composer_versions + [ 'composer@2.2' ] }}"
+    composer_versions: "{{ composer_versions + [ 'composer@2.2' ] }}"
   tags: 
     - composer@2.2
 
@@ -52,7 +52,7 @@
 
 - name: "Adding 'composer@1.10' to 'composer_versions' array"
   set_fact:
-    php_versions: "{{ composer_versions + [ 'composer@1.10' ] }}"
+    composer_versions: "{{ composer_versions + [ 'composer@1.10' ] }}"
   tags: 
     - composer@1.10
 

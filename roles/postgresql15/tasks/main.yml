@@ -5,9 +5,33 @@
     state: "present"
     path: "/home/linuxbrew/.linuxbrew/bin"
   with_items:
-  - "digitalspacestdio/nextgen-devenv"
+    - "digitalspacestdio/nextgen-devenv"
 
 - name: "Ensure postgresql15"
   homebrew:
     name: "digitalspace-postgresql15"
-    state: latest
+  state: latest
+  tags:
+    - postgresql15
+
+- name: "Adding 'postgresql15' to 'postgresql_versions' array"
+  set_fact:
+    postgresql_versions: "{{ postgresql_versions + [ 'postgresql15' ] }}"
+  tags:
+    - postgresql15
+
+- name: "Remove postgresql15"
+  homebrew:
+    name: "digitalspace-postgresql15"
+    state: absent
+  when: "postgresql_versions is not defined or postgresql_versions | length < 1"
+  tags:
+    - mysqlNone
+
+- name: "Remove postgresql15 from supervisor"
+  shell: 
+    cmd: "ls | grep 'postgresql15' | xargs --no-run-if-empty -I{} rm {}"
+    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+  when: "postgresql_versions is not defined or postgresql_versions | length < 1"
+  tags:
+    - mysqlNone

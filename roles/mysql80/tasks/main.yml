@@ -11,3 +11,27 @@
   homebrew:
     name: "digitalspace-mysql80"
     state: latest
+  tags:
+    - mysql80
+
+- name: "Adding 'mysql80' to 'mysql_versions' array"
+  set_fact:
+    mysql_versions: "{{ mysql_versions + [ 'mysql80' ] }}"
+  tags:
+    - mysql80
+
+- name: "Remove mysql80"
+  homebrew:
+    name: "digitalspace-mysql80"
+    state: absent
+  when: "mysql_versions is not defined or mysql_versions | length < 1"
+  tags:
+    - mysqlNone
+
+- name: "Remove mysql80 from supervisor"
+  shell: 
+    cmd: "ls | grep 'mysql80' | xargs --no-run-if-empty -I{} rm {}"
+    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+  when: "mysql_versions is not defined or mysql_versions | length < 1"
+  tags:
+    - mysqlNone

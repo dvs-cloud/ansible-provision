@@ -11,3 +11,28 @@
   homebrew:
     name: "digitalspace-mailhog"
     state: latest
+  tags:
+    - mailhog
+
+- name: "Adding 'mailhog' to 'mailhog_versions' array"
+  set_fact:
+    mailhog_versions: "{{ mailhog_versions + [ 'mailhog' ] }}"
+  tags:
+    - mailhog
+
+- name: "Remove mailhog"
+  homebrew:
+    name: "digitalspace-mailhog"
+    state: absent
+  when: "mailhog_versions is not defined or mailhog_versions | length < 1"
+  tags:
+    - mailhogNone
+
+- name: "Remove mailhog from supervisor"
+  shell: 
+    cmd: "ls | grep 'mailhog' | xargs --no-run-if-empty -I{} rm {}"
+    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+  when: "mailhog_versions is not defined or mailhog_versions | length < 1"
+  tags:
+    - mailhogNone
+  
