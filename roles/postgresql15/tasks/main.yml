@@ -10,7 +10,7 @@
 - name: "Ensure postgresql15"
   homebrew:
     name: "digitalspace-postgresql15"
-  state: latest
+    state: latest
   tags:
     - postgresql15
 
