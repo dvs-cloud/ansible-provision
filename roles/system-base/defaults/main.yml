@@ -11,6 +11,7 @@ base_packages:
   - git-core
   - htop
   - iftop
+  - nload
   - sudo
   - vim
   - mysql-client
