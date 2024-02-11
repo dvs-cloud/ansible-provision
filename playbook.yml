@@ -1,10 +1,11 @@
 ---
 - hosts: coder_workspace_vm
   gather_facts: False
-  vars: 
-    - service_disabled: [ ]
-    - service_started: [ ]
-    - service_restarted: [ ]
+  vars:
+    - php_versions: []
+    - composer_versions: []
+    - mysql_versions: []
+    - postgresql_versions: []
   pre_tasks:
     - name: 'Ensure python'
       raw: "sh -c 'which python3 > /dev/null || (apt -yqq update && apt install -yqq python3)'"
@@ -192,71 +193,6 @@
         - mailhog
 
   post_tasks:
-    # - shell: "echo $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' | /bin/true)"
-    #   register: brew_list
-    #   when: php_version is not defined
-
-    # - name: "Remove all php versions"
-    #   shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
-    #   when: php_version is not defined and brew_list.stdout != ""
-
-    # - name: "Remove another php versions from supervisor"
-    #   shell: 
-    #     cmd: "ls | grep 'php[0-9]\\+' | xargs -I{} rm {}"
-    #     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
-    #   when: ansible_system == "Darwin"
-
-    # - name: "Remove another php versions from supervisor"
-    #   shell: 
-    #     cmd: "ls | grep 'php[0-9]\\+' | xargs --no-run-if-empty -I{} rm {}"
-    #     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
-    #   when: ansible_system == "Linux"
-
-    # - name: "Remove all php versions"
-    #   shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
-    #   when: php_version is not defined and brew_list.stdout != ""
-
-    # - name: "Remove nginx from supervisor"
-    #   shell: 
-    #     cmd: "ls | grep 'nginx' | xargs --no-run-if-empty -I{} rm {}"
-    #     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
-    #   when: php_version is not defined and ansible_system == "Linux"
-
-    # - name: Populate service facts
-    #   service_facts:
-    #   tags:
-    #     - always
-
-    # - name: "Disabling services"
-    #   service:
-    #     name: "{{ item }}"
-    #     state: stopped
-    #     enabled: no
-    #   become: true
-    #   when: "service_disabled|length > 0 and item in services"
-    #   with_items: "{{ service_disabled | unique }}"
-    #   tags:
-    #     - always
-
-    # - name: "Starting services"
-    #   service:
-    #     name: "{{ item }}"
-    #     state: restarted
-    #   become: true
-    #   when: "service_started|length > 0 and item in services"
-    #   with_items: "{{ service_started | unique }}"
-    #   tags:
-    #     - always
-
-    # - name: "Restarting services"
-    #   service:
-    #     name: "{{ item }}"
-    #     state: restarted
-    #   become: true
-    #   when: "service_restarted|length > 0 and item in services"
-    #   with_items: "{{ service_restarted | unique }}"
-    #   tags:
-    #     - always
 
     - name: "Starting digitalspace-supervisor"
       shell: '[ -e /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-start ] && /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-start'

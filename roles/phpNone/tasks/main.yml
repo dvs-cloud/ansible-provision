@@ -1,16 +1,16 @@
 ---
-  - shell: "echo $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' | /bin/true)"
-    register: brew_list
-
   - name: "Remove all php versions"
-    shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
+    shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' | /bin/true)"
+    when: "php_versions is not defined or php_versions | length < 1"
 
   - name: "Remove all php versions from supervisor"
     shell: 
       cmd: "ls | grep 'php[0-9]\\+' | xargs --no-run-if-empty -I{} rm {}"
       chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+    when: "php_versions is not defined or php_versions | length < 1"
 
   - name: "Remove nginx from supervisor"
     shell: 
       cmd: "ls | grep 'nginx' | xargs --no-run-if-empty -I{} rm {}"
       chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+    when: "php_versions is not defined or php_versions | length < 1"

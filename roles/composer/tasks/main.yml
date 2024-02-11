@@ -4,19 +4,18 @@
   with_items:
   - "digitalspacestdio/php"
 
-- name: "Ensure digitalspacestdio/php/composer@1.10"
+- name: "Ensure digitalspacestdio/php/composer@2.6"
   homebrew:
-    name: "digitalspacestdio/php/composer@1.10"
+    name: "digitalspacestdio/php/composer@2.6"
     state: latest
   tags: 
-    - composer@1.10
+    - composer@2.6
 
-- name: "Ensure digitalspacestdio/php/composer@2.2"
-  homebrew:
-    name: "digitalspacestdio/php/composer@2.2"
-    state: latest
+- name: "Adding 'composer@2.6' to 'composer_versions' array"
+  set_fact:
+    php_versions: "{{ composer_versions + [ 'composer@2.6' ] }}"
   tags: 
-    - composer@2.2
+    - composer@2.6
 
 - name: "Ensure digitalspacestdio/php/composer@2.4"
   homebrew:
@@ -25,14 +24,40 @@
   tags: 
     - composer@2.4
 
-- name: "Ensure digitalspacestdio/php/composer@2.6"
+- name: "Adding 'composer@2.4' to 'composer_versions' array"
+  set_fact:
+    php_versions: "{{ composer_versions + [ 'composer@2.4' ] }}"
+  tags: 
+    - composer@2.4
+
+- name: "Ensure digitalspacestdio/php/composer@2.2"
   homebrew:
-    name: "digitalspacestdio/php/composer@2.6"
+    name: "digitalspacestdio/php/composer@2.2"
     state: latest
   tags: 
-    - composer@2.6
+    - composer@2.2
+
+- name: "Adding 'composer@2.2' to 'composer_versions' array"
+  set_fact:
+    php_versions: "{{ composer_versions + [ 'composer@2.2' ] }}"
+  tags: 
+    - composer@2.2
+
+- name: "Ensure digitalspacestdio/php/composer@1.10"
+  homebrew:
+    name: "digitalspacestdio/php/composer@1.10"
+    state: latest
+  tags: 
+    - composer@1.10
+
+- name: "Adding 'composer@1.10' to 'composer_versions' array"
+  set_fact:
+    php_versions: "{{ composer_versions + [ 'composer@1.10' ] }}"
+  tags: 
+    - composer@1.10
 
 - name: "Remove all composer versions"
   shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list --full-name | grep 'digitalspacestdio/php/composer')"
+  when: "composer_versions is not defined or composer_versions | length < 1"
   tags: 
     - composerNone

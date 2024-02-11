@@ -24,17 +24,17 @@
 #   shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
 #   when: brew_list.stdout != ""
 
-- name: "Remove another php versions from supervisor"
-  shell: 
-    cmd: "ls | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs -I{} rm {}"
-    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
-  when: ansible_system == "Darwin"
+# - name: "Remove another php versions from supervisor"
+#   shell: 
+#     cmd: "ls | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs -I{} rm {}"
+#     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+#   when: ansible_system == "Darwin"
 
-- name: "Remove another php versions from supervisor"
-  shell: 
-    cmd: "ls | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs --no-run-if-empty -I{} rm {}"
-    chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
-  when: ansible_system == "Linux"
+# - name: "Remove another php versions from supervisor"
+#   shell: 
+#     cmd: "ls | grep 'php[0-9]\\+' | grep -v {{ php_version }} | xargs --no-run-if-empty -I{} rm {}"
+#     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+#   when: ansible_system == "Linux"
 
 - name: "Installing {{ php_version }} dependencies"
   homebrew:
@@ -66,3 +66,7 @@
     dest: "{{ homebrew_prefix }}/etc/php/.phprc"
     mode: '0644'
     content: "{{ php_version_num }}"
+
+- name: "Adding '{{ php_version }}' to 'php_versions' array"
+  set_fact:
+    php_versions: "{{ php_versions + [ php_version ] }}"
