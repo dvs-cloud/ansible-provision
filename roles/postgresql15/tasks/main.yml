@@ -26,7 +26,7 @@
     state: absent
   when: "postgresql_versions is not defined or postgresql_versions | length < 1"
   tags:
-    - mysqlNone
+    - postgresqlNone
 
 - name: "Remove postgresql15 from supervisor"
   shell: 
@@ -34,4 +34,4 @@
     chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
   when: "postgresql_versions is not defined or postgresql_versions | length < 1"
   tags:
-    - mysqlNone
+    - postgresqlNone
