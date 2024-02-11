@@ -188,6 +188,29 @@
       when: developer_username is defined
 
   post_tasks:
+    - shell: "echo $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' | grep -v \"{{ php_versions | join('\\|') }}\" || /bin/true)"
+      register: brew_list
+      become: yes
+      become_user: "{{ developer_username }}"
+      tags:
+        - always
+    
+    - name: "Remove another php versions"
+      shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies {{ brew_list.stdout }}"
+      become: yes
+      become_user: "{{ developer_username }}"
+      when: brew_list.stdout != ""
+      tags:
+        - always
+
+    - name: "Remove another php versions from supervisor"
+      shell: 
+        cmd: "ls | grep 'php[0-9]\\+' | grep -v \"{{ php_versions | join('\\|') }}\" | xargs --no-run-if-empty -I{} rm {}"
+        chdir: "{{ homebrew_prefix }}/etc/digitalspace-supervisor.d"
+      become: yes
+      become_user: "{{ developer_username }}"
+      tags:
+        - always
 
     - name: "Starting digitalspace-supervisor"
       shell: '[ -e /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-start ] && /home/linuxbrew/.linuxbrew/bin/digitalspace-supervisor-start'
