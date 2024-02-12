@@ -1,6 +1,6 @@
 ---
   - name: "Remove all php versions"
-    shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+')"
+    shell: "{{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+' && {{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list | grep 'php[0-9]\\+') || /bin/true"
     when: "php_versions is not defined or php_versions | length < 1"
 
   - name: "Remove all php versions from supervisor"
