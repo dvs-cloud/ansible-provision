@@ -57,7 +57,7 @@
     - composer@1.10
 
 - name: "Remove all composer versions"
-  shell: "{{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list --full-name | grep 'digitalspacestdio/php/composer')"
+  shell: "{{ homebrew_prefix }}/bin/brew list --full-name | grep 'digitalspacestdio/php/composer' && {{ homebrew_prefix }}/bin/brew uninstall --ignore-dependencies $({{ homebrew_prefix }}/bin/brew list --full-name | grep 'digitalspacestdio/php/composer') || /bin/true"
   when: "composer_versions is not defined or composer_versions | length < 1"
   tags: 
     - composerNone
