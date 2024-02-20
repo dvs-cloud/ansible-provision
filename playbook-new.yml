@@ -1,0 +1,27 @@
+---
+
+- name: linux
+  hosts:
+    - all
+    # - localhost
+  become: yes
+  gather_facts: yes
+
+  serial:
+    - 1
+    - 2
+    - "25%"
+    - "50%"
+  
+  vars_files:
+    - "environments/{{ env | default('dev') }}/env.yml"
+    - "environments/{{ env | default('dev') }}/base.yml"
+  
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: true
+  
+  roles:
+    - role: base
+      tags: [ base ]

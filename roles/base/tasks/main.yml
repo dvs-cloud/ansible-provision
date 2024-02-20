@@ -1,0 +1,5 @@
+---
+
+- name: Get current package version
+  package_facts:
+    manager: auto
